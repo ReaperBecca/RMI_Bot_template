@@ -13,6 +13,6 @@ module.exports = {
 
     run: async (client, interaction) => {
         const user = interaction.user.id
-        return interaction.reply(`<@${user}>!\n ${JSON.stringify(userAccount.getUserCache(user), null, 2)}`);
+        return interaction.reply(`<@${user}>!\n ${JSON.stringify(userAccount, null, 2)}`);
     }
 }

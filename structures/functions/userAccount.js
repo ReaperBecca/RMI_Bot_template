@@ -1,6 +1,5 @@
 const UserDataManager = require('../classes/userDataClass');
 const userManager = new UserDataManager();
-const localDb = require('../database/localDbHandler');
 
 async function getUserData(userId) {
     if (!userId) {

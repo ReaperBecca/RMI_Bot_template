@@ -13,6 +13,6 @@ module.exports = {
 
     run: async (client, interaction) => {
         const user = interaction.user.id
-        return interaction.reply(`@${user}!\n ${userAccount.getUserCache(user)}`)
+        return interaction.reply(`<@${user}>!\n ${userAccount.getUserCache(user)}`)
     }
 }

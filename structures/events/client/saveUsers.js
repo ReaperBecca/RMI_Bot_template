@@ -67,7 +67,7 @@ module.exports = {
 client.on("messageCreate", async (message) => {
     try {
         const user = await userAccount.userManager.fetchUser(message.author.id);
-        const userCache = await userAccount.getUserCache(user.userId);
+        const userCache = await userAccount.getUserCache(user);
 
         if (userCache) {
             userCache.ttlMsgs = (userCache.ttlMsgs || 0) + 1;
@@ -75,7 +75,7 @@ client.on("messageCreate", async (message) => {
             userCache.ttlChrs = (userCache.ttlChrs || 0) + message.content.length;
 
             // Update cache
-            userAccount.userCaches.put(user.userId, userCache);
+            userAccount.userCaches.put(user, userCache);
         }
     } catch (error) {
         console.error("Error processing message for user data:", error);
@@ -85,7 +85,7 @@ client.on("messageCreate", async (message) => {
 client.on("interactionCreate", async (interaction) => {
     try {
         const user = await userAccount.userManager.fetchUser(interaction.user.id);
-        const userCache = await userAccount.getUserCache(user.userId);
+        const userCache = await userAccount.getUserCache(user);
 
         if (userCache) {
             userCache.ttlInt = (userCache.ttlInt || 0) + 1;
@@ -95,7 +95,7 @@ client.on("interactionCreate", async (interaction) => {
             }
 
             // Update cache
-            userAccount.userCaches.put(user.userId, userCache);
+            userAccount.userCaches.put(user, userCache);
         }
     } catch (error) {
         console.error("Error processing interaction for user data:", error);

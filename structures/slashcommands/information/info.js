@@ -21,7 +21,7 @@ module.exports = {
             await userAccount.userManager.fetchUser(userId);
             
             // Get the path to the user's data file
-            const dbPath = path.join(__dirname, '../../../../Database');
+            const dbPath = path.join(__dirname, '../../../../../Database');
             const userDataPath = path.join(dbPath, 'userData');
             const userFilePath = path.join(userDataPath, `${userId}.json`);
             

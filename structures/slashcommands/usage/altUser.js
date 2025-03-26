@@ -1,4 +1,4 @@
-const { Client, CommandInteraction, ActionBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const { Client, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const UserDataManager = require('../../classes/userDataClass');
 
 module.exports = {
@@ -39,7 +39,7 @@ module.exports = {
                 }
                 return 'Unamed Group';
             }).join('\n');
-            
+
             embed.addFields(
                 { name: 'Alt Groups', value: groupDisplay }
             );
@@ -50,7 +50,7 @@ module.exports = {
         }
 
         // Create buttons
-        const row = new ActionBuilder();
+        const row = new ActionRowBuilder();
 
         // Button 1: Add Alt Group (always enabled)
         row.addComponents(

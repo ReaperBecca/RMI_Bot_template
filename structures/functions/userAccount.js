@@ -16,7 +16,7 @@ const activeTimer = (userId) => {
     const minutes = 30;
     userActiveStatus[userId] = true;
 
-    if (userTimerouts[userId]) {
+    if (userTimeouts[userId]) {
         clearTimeout(userTimeouts[userId]);
     }
 

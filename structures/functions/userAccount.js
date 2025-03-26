@@ -17,7 +17,7 @@ const activeTimer = (userId) => {
     userActiveStatus[userId] = true;
 
     if (userTimerouts[userId]) {
-        clearTimeout(userTimerouts[userId]);
+        clearTimeout(userTimeouts[userId]);
     }
 
     userTimeouts[userId] = setTimeout(() => {

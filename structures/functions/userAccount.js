@@ -1,4 +1,4 @@
-const UserDataManager = require('../classes/userDataManager');
+const UserDataManager = require('../classes/userDataClass');
 const userManager = new UserDataManager();
 const localDb = require('../database/localDbHandler');
 

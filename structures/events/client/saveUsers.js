@@ -35,7 +35,7 @@ async function getUserCache(userId) {
     if (!userId) {
         return Object.keys(userCaches);
     }
-    if (!userCaches[userId]) {
+    if (!userCaches.get(userId)) {
         const findUserData = await UserData.findOne({ userId });
         if (!findUserData) {
             const newUser = await userManager.fetchUser(userId);
@@ -88,10 +88,10 @@ client.on("interactionCreate", async (interaction) => {
         const userCache = await userAccount.getUserCache(user.userId);
 
         if (userCache) {
-            userCache.ttleInt = (userCache.ttlInt || 0) + 1;
+            userCache.ttlInt = (userCache.ttlInt || 0) + 1;
 
             if (interaction.isButton()) {
-                userCache.ttleBttn = (userCache.ttlBttn || 0) + 1;
+                userCache.ttlBttn = (userCache.ttlBttn || 0) + 1;
             }
 
             // Update cache

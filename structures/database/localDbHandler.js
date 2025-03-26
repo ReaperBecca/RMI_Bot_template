@@ -4,7 +4,7 @@ const { logger } = require('../functions/logger');
 
 class LocalDbHandler {
     constructor() {
-        this.dbPath = path.join(__dirname, '../../Database');
+        this.dbPath = path.join(__dirname, '../../../../Database');
         this.userDataPath = path.join(this.dbPath, 'userData');
         this.initialized = false;
     }

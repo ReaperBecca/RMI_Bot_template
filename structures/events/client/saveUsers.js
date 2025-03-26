@@ -1,5 +1,6 @@
 const userAccount = require('../../functions/userAccount');
 const client = require("../../client");
+const localDb = require("../../database/localDbHandler");
 /*
 const userCaches = new activeCache.Cache();
 const loadCache = new autoCache();
@@ -64,21 +65,42 @@ module.exports = {
 */
 
 client.on("messageCreate", async (message) => {
-    const user = await userAccount.userManager.fetch(message.author.id);
-    userAccount.userCaches(user.userId);
-    userAccount.userCaches.put(user.userId.ttlMsgs, + 1);
-    userAccount.userCaches.put(user.userId.ttlWords, + message.content.split(" ").length);
-    userAccount.userCaches.put(user.userId.ttlChrs, + message.content.length);
-})
+    try {
+        const user = await userAccount.userManager.fetchUser(message.author.id);
+        const userCache = await userAccount.getUserCache(user.userId);
+
+        if (userCache) {
+            userCache.ttlMsgs = (userCache.ttlMsgs || 0) + 1;
+            userCache.ttlWords = (userCache.ttlWords || 0) + message.content.split(" ").length;
+            userCache.ttlChrs = (userCache.ttlChrs || 0) + message.content.length;
+
+            // Update cache
+            userAccount.userCaches.put(user.userId, userCache);
+        }
+    } catch (error) {
+        console.error("Error processing message for user data:", error);
+    }
+});
 
 client.on("interactionCreate", async (interaction) => {
-    const user = await userAccount.userManager.fetch(interaction.user.id);
-    userAccount.userCaches(user.userId);
-    userAccount.userCaches.put(user.userId.ttlInt, + 1);
-    if (interaction.isButton()) {
-        userAccount.userCaches.put(user.userId.ttlBtn, + 1);
+    try {
+        const user = await userAccount.userManager.fetchUser(interaction.user.id);
+        const userCache = await userAccount.getUserCache(user.userId);
+
+        if (userCache) {
+            userCache.ttleInt = (userCache.ttlInt || 0) + 1;
+
+            if (interaction.isButton()) {
+                userCache.ttleBttn = (userCache.ttlBttn || 0) + 1;
+            }
+
+            // Update cache
+            userAccount.userCaches.put(user.userId, userCache);
+        }
+    } catch (error) {
+        console.error("Error processing interaction for user data:", error);
     }
-})
+});
 
 
 
@@ -86,28 +108,33 @@ client.on("ready", async () => {
     const appSave = 5 * 60 * 1000;
 
     const appCache = () => {
-        setTimeout(() => {
-            if ((userAccount.userCaches.size === 0) || (userAccount.saveCache.size === 0)) {
-                return;
-            } else {
-                const checkActiveUsers = userAccount.userCaches();
-                const checkedUsers = userAccount.saveCache();
-                for (const user of checkActiveUsers) {
-                userAccount.saveCache.set(user.userId, userAccount.userCaches(user));
-                if (!isUserActive(user)) {
-                    userAccount.userCaches.del(user);
+        setTimeout(async () => {
+            try {
+                if (userAccount.userCaches.size === 0) {
+                    appCache();
+                    return;
                 }
+
+                const checkActiveUsers = userAccount.getUserCache();
+
+                for (const userId of checkActiveUsers) {
+                    const userData = userAccount.userCaches.get(userId);
+
+                    if (userData) {
+                        // Save to local storage
+                        await localDb.saveData('userData', userData);
+                        console.log(`Saved ${userId} to the local database.`);
+
+                        // If user is not active, remove from cache
+                        if (!userAccount.isUserActive(userId)) {
+                            userAccount.userCaches.del(userId);
+                        }
+                    }
                 }
-                for (const user of checkedUsers) {
-                    const nextUser = checkedUsers.take(user);
-                    const saveUser = userAccount.userData.findOne({ userId: nextUser.userId });
-                    saveUser.updateMany({}, { $set: nextUser });
-                    console.log(`Saved ${nextUser.userId} to the database.`);
-                    console.log(nextUser);
-                }
+            } catch (error) {
+                console.error("Error in appCache:", error);
             }
-            appCache();
         }, appSave);
     }
-})
+});
 

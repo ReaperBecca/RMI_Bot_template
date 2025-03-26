@@ -1,9 +1,8 @@
-const mongoose = require('mongoose');
-const UserData = require('../database/schema/userDataSchema');
 const UserDataManager = require("../classes/userDataClass");
 const userManager = new UserDataManager();
 const activeCache = require('memory-cache');
 const autoCache = require('node-cache');
+const localDb = require('../database/localDbHandler');
 
 const userCaches = new activeCache.Cache();
 const loadCache = new autoCache();
@@ -42,18 +41,18 @@ async function getUserCache(userId) {
         return Object.keys(userCaches);
     }
     if (!userCaches[userId]) {
-        const findUserData = await UserData.findOne({ userId });
+        const findUserData = await localDb.findOne('userData', { userId });
         if (!findUserData) {
-            const newUser = await userManager.fetch(userId);
+            const newUser = await userManager.fetchUser(userId);
             loadCache.set(userId, newUser);
         } else {
             loadCache.set(userId, findUserData);
         }
-        const loadUser = loadCache[userId];
+        const loadUser = loadCache.get(userId);
         userCaches.put(userId, loadUser);
     } 
     setUserActive(userId);
-    return userCaches[userId];
+    return userCaches.get(userId);
 }
 
 module.exports = {
@@ -66,7 +65,8 @@ module.exports = {
     cacheTime,
     activeTimer,
     userActiveStatus,
-    userTimeouts
+    userTimeouts,
+    userManager
 };
 
 /*

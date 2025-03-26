@@ -1,24 +1,23 @@
-const mongoose = require('mongoose');
 const config = require('../configuration/index');
 const { logger } = require('../functions/logger');
+const localDb = require('./localDbHandler');
 
 const connect = async () => {
-    mongoose.set('strictQuery', true)
-    mongoose.connect(config.mongodb_url);
+    console.log("\n---------------------");
 
+    if (config.database) {
+        try {
+            await localDb.initialize();
+            logger("Local database initialized", "success");
 
-    mongoose.connection.once("open", () => {
-        console.log("\n---------------------")
-        logger("Database integration established", "success")
-        console.log("---------------------")
-    });
-    mongoose.connection.on("error", (error) => {
-        console.log("\n---------------------")
-        logger(`Database connection is experiencing issues: ${error}`, "error")
-        console.log("---------------------")
-    })
+        } catch (error) {
+            logger(`DatabasLocal database initialization failed: ${error}`, "error");
+        }
+    } else {
+        logger("Database integration disabled in config", "info");
+    }
 
-
+    console.log("---------------------");
     return;
 }
 

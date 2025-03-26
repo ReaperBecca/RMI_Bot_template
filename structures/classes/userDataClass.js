@@ -1,4 +1,4 @@
-const UserData = require("../database/schema/userDataSchema");
+const localDb = require("../database/localDbHandler");
 
 class UserDataManager {
     constructor() {
@@ -7,10 +7,35 @@ class UserDataManager {
 
     // Find or create user data
     async fetchUser(userId) {
-        let userData = await UserData.findOne({ userId });
+        let userData = await localDb.findOne('userData', { userId });
         if (!userData) {
-            userData = new UserData({ userId });
-            await userData.save();
+            userData = {
+                userId,
+                guildId: [],
+                xp: 0,
+                level: 1,
+                maxLevel: 1,
+                coins: 0,
+                maxCoins: 0,
+                inventory: [],
+                classes: [],
+                characters: [],
+                achievements: [],
+                ttlMsgs: 0,
+                ttlWords: 0,
+                ttlChrs: 0,
+                ttlInt: 0,
+                ttlBttn: 0,
+                altUsers: [],
+                shrXp: true,
+                shrLvl: true,
+                shrCoins: true,
+                shrInv: true,
+                shrClasses: true,
+                shrChars: true,
+                shrAch: true
+            };
+            await localDb.saveData('userData', userId, userData);
         }
         return userData;
     }
@@ -20,7 +45,7 @@ class UserDataManager {
         let userData = await this.fetchUser(userId);
         if (typeof userData[field] !== "number") {
             userData[field] = defaultValue;
-            await userData.save();
+            await localDb.saveData('userData', userId, userData);
         }
         return userData[field];
     }
@@ -30,7 +55,7 @@ class UserDataManager {
         let userData = await this.fetchUser(userId);
         if (typeof userData[field] !== "boolean") {
             userData[field] = defaultValue;
-            await userData.save();
+            await localDb.saveData('userData', userId, userData);
         }
         return userData[field];
     }
@@ -40,7 +65,7 @@ class UserDataManager {
         let userData = await this.fetchUser(userId);
         if (!Array.isArray(userData[field])) {
             userData[field] = [];
-            await userData.save();
+            await localDb.saveData('userData', userId, userData);
         }
         return userData[field];
     }

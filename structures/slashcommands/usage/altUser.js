@@ -1,5 +1,7 @@
 const { Client, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const UserDataManager = require('../../classes/userDataClass');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = {
     name: "altuser",
@@ -111,6 +113,82 @@ module.exports = {
         // Send the response with buttons
         const components = hasAltGroups ? [row, row2] : [row];
         
+        
+
+        // Create button collector
+        const collector = Response.createMessageComponentCollector({
+            time: 300000 // 5 minutes
+        });
+
+        // Load button handlers
+        const buttonHandlers = new Map();
+        const buttonPath = path.join(__dirname, 'altUser_Buttons');
+
+        try {
+            const buttonFiles = fs.readdirSync(buttonPath);
+
+            for (const file of buttonFiles) {
+                if (file.endsWith('.js')) {
+                    const buttonHandler = require(path.join(buttonPath, file));
+                    if (buttonHandler.customId) {
+                        buttonHandlers.set(buttonHandler.customId, buttonHandler);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading button handlers:', error);
+        }
+
+        // Handle button interactions
+        collector.on('collect', async (buttonInteraction) => {
+            const handler = buttonHandlers.get(buttonInteraction.customId);
+
+            if (handler) {
+                try {
+                    await handler.run(client, buttonInteraction, userData);
+                } catch (error) {
+                    console.error(`Error executing button handler for ${buttonInteraction.customId}:`, error);
+                    await buttonInteraction.reply({
+                        content: 'There was an error processing your request.',
+                        ephemeral: true
+                    }).catch(console.error);
+                }
+            } else {
+                await buttonInteraction.reply({
+                    content: 'This button is not yet implemented.',
+                    ephemeral: true
+                }).catch(console.error);
+            }
+        });
+
+        collector.on('end', () => {
+            // Update the message to show that the buttons are no longer active
+            const disabledRow = new ActionRowBuilder()
+                .addComponents(
+                    row.components[0].setDisabled(true)
+                );
+
+            const disabledComponents = [disabledRow];
+
+            if (hasAltGroups) {
+                const disabledRow1 = new ActionRowBuilder();
+                row.components.slice(1).forEach(component => {
+                    disabledRow1.addComponents(component.setDisabled(true));
+                });
+
+                const disabledRow2 = new ActionRowBuilder();
+                row2.components.forEach(component => {
+                    disabledRow2.addComponents(component.setDisabled(true));
+                });
+
+                disabledComponents.push(disabledRow1, disabledRow2);
+            }
+
+            interaction.editReply({
+                components: disabledComponents
+            }).catch(console.error);
+        });
+
         return interaction.reply({
             embeds: [embed],
             components: components,

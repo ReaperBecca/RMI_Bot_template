@@ -112,11 +112,9 @@ module.exports = {
         
         // Send the response with buttons
         const components = hasAltGroups ? [row, row2] : [row];
-        
-        
-
+                
         // Create button collector
-        const collector = Response.createMessageComponentCollector({
+        const collector = interaction.channel.createMessageComponentCollector({
             time: 300000 // 5 minutes
         });
 
